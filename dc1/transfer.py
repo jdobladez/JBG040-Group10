@@ -4,10 +4,10 @@ import torchvision.models as models
 
 class PreNet(nn.Module):
     def __init__(self, n_classes: int) -> None:
-        super(Net, self).__init__()
+        super(PreNet, self).__init__()
 
         # Loading pre-trained model
-        self.pretrained_model = models.resnet18(pretrained=True)
+        self.pretrained_model = models.resnet18()
 
         # Freezing all layers in the pre-trained model
         for param in self.pretrained_model.parameters():
@@ -21,4 +21,6 @@ class PreNet(nn.Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         # Using the pre-trained model to extract features
         x = self.pretrained_model(x)
+        x = x.view(x.size(0), -1)
+        x = self.linear_layers(x)
         return x
