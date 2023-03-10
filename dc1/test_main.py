@@ -30,7 +30,7 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
                                 Path("/Users/sarpakar/Desktop/JBG040-Group10/data/Y_test.npy"))
 
     # Load the Neural Net. NOTE: set number of distinct labels here
-    model = PreNet(n_classes=6)
+    model = PreNet(n_classes=6,pretrained_network='resnet18')
 
     # Initialize optimizer(s) and loss function(s)
     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.1)
