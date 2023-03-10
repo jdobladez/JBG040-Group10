@@ -24,10 +24,11 @@ from typing import List
 def main(args: argparse.Namespace, activeloop: bool = True) -> None:
 
     # Load the train and test data set
-    train_dataset = ImageDataset(Path("data/X_train.npy"), Path("data/Y_train.npy"))
-    test_dataset = ImageDataset(Path("data/X_test.npy"), Path("data/Y_test.npy"))
+    train_dataset = ImageDataset(Path("/Users/sarpakar/Desktop/JBG040-Group10/data/X_train.npy"), Path("/Users/sarpakar/Desktop/JBG040-Group10/data/Y_train.npy"))
+    test_dataset = ImageDataset(Path("/Users/sarpakar/Desktop/JBG040-Group10/data/X_test.npy"), Path("/Users/sarpakar/Desktop/JBG040-Group10/data/Y_test.npy"))
 
     # Load the Neural Net. NOTE: set number of distinct labels here
+    model_name  = 'pre_trained'
     model = Net(n_classes=6)
 
     # Initialize optimizer(s) and loss function(s)
