@@ -7,7 +7,7 @@ class PreNet(nn.Module):
         super(PreNet, self).__init__()
 
         # Loading pre-trained model
-        self.pretrained_model = models.resnet18()
+        self.pretrained_model = models.resnet18(weights='ResNet18_Weights.IMAGENET1K_V1')
 
         # Freezing all layers in the pre-trained model
         for param in self.pretrained_model.parameters():
