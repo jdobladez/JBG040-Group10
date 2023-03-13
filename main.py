@@ -1,4 +1,6 @@
 # Custom imports
+import numpy as np
+
 from dc1.batch_sampler import BatchSampler
 from dc1.image_dataset import ImageDataset
 from dc1.net import Net
@@ -20,15 +22,33 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
+from sklearn.model_selection import train_test_split
+
+
 
 def main(args: argparse.Namespace, activeloop: bool = True) -> None:
 
-    # Load the train and test data set
-    train_dataset = ImageDataset(Path("/Users/sarpakar/Desktop/JBG040-Group10/data/X_train.npy"), Path("/Users/sarpakar/Desktop/JBG040-Group10/data/Y_train.npy"))
-    test_dataset = ImageDataset(Path("/Users/sarpakar/Desktop/JBG040-Group10/data/X_test.npy"), Path("/Users/sarpakar/Desktop/JBG040-Group10/data/Y_test.npy"))
+    # Load data from numpy arrays
+    X_train = np.load("data/X_train.npy")
+    Y_train = np.load("data/Y_train.npy")
+
+    # Split data into training and validation sets
+    X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.1, random_state=42)
+
+    # Save split data to disk
+    np.save("data/X_train_split.npy", X_train)
+    np.save("data/Y_train_split.npy", Y_train)
+    np.save("data/X_val.npy", X_val)
+    np.save("data/Y_val.npy", Y_val)
+
+    # Create ImageDataset objects from the split data
+    train_dataset = ImageDataset(Path("data/X_train_split.npy"), Path("data/Y_train_split.npy"))
+    val_dataset = ImageDataset(Path("data/X_val.npy"), Path("data/Y_val.npy"))
+
+    # Loading test data
+    test_dataset = ImageDataset(Path("data/X_test.npy"), Path("data/Y_test.npy"))
 
     # Load the Neural Net. NOTE: set number of distinct labels here
-    model_name  = 'pre_trained'
     model = Net(n_classes=6)
 
     # Initialize optimizer(s) and loss function(s)
@@ -53,7 +73,7 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
         # Creating a summary of our model and its layers:
         summary(model, (1, 128, 128), device=device)
     elif (
-        torch.backends.mps.is_available() and not DEBUG
+            torch.backends.mps.is_available() and not DEBUG
     ):  # PyTorch supports Apple Silicon GPU's from version 1.12
         print("@@@ Apple silicon device enabled, training with Metal backend...")
         device = "mps"
@@ -64,26 +84,52 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
         # Creating a summary of our model and its layers:
         summary(model, (1, 128, 128), device=device)
 
-    # Lets now train and test our model for multiple epochs:
+    # Let's now train, validate and test our model for multiple epochs:
     train_sampler = BatchSampler(
         batch_size=batch_size, dataset=train_dataset, balanced=args.balanced_batches
     )
     test_sampler = BatchSampler(
         batch_size=100, dataset=test_dataset, balanced=args.balanced_batches
     )
+    val_sampler = BatchSampler(
+        batch_size=100, dataset=val_dataset, balanced=args.balanced_batches
+    )
+
+    best_val_loss = float("inf")   # smallest valuation loss over epochs
+    patience = 5  # number of epochs to wait for improvement
+    wait = 0  # number of epochs without improvement
 
     mean_losses_train: List[torch.Tensor] = []
     mean_losses_test: List[torch.Tensor] = []
-    
+    mean_losses_val: List[torch.Tensor] = []
+
     for e in range(n_epochs):
         if activeloop:
-
             # Training:
             losses = train_model(model, train_sampler, optimizer, loss_function, device)
+
             # Calculating and printing statistics:
             mean_loss = sum(losses) / len(losses)
             mean_losses_train.append(mean_loss)
             print(f"\nEpoch {e + 1} training done, loss on train set: {mean_loss}\n")
+
+            # Validaton
+            losses = test_model(model, val_sampler, loss_function, device)
+
+            # Calculating and printing statistics:
+            mean_loss = sum(losses) / len(losses)
+            mean_losses_val.append(mean_loss)
+            print(f"\nEpoch {e + 1} validation done, loss on validation set: {mean_loss}\n")
+
+            ### Check for early stopping
+            if mean_loss < best_val_loss:
+                best_val_loss = mean_loss
+                wait = 0
+            else:
+                wait += 1
+                if wait >= patience:
+                    print(f"No improvement for {patience} epochs. Stopping early.")
+                    break
 
             # Testing:
             losses = test_model(model, test_sampler, loss_function, device)
@@ -97,7 +143,8 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
             plotext.clf()
             plotext.scatter(mean_losses_train, label="train")
             plotext.scatter(mean_losses_test, label="test")
-            plotext.title("Train and test loss")
+            plotext.scatter(mean_losses_val, label="val")
+            plotext.title("Train, Validation and Test loss")
 
             plotext.xticks([i for i in range(len(mean_losses_train) + 1)])
 
@@ -105,36 +152,38 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
 
     # retrieve current time to label artifacts
     now = datetime.now()
+
     # check if model_weights/ subdir exists
     if not Path("model_weights/").exists():
         os.mkdir(Path("model_weights/"))
-    
+
     # Saving the model
     torch.save(model.state_dict(), f"model_weights/model_{now.month:02}_{now.day:02}_{now.hour}_{now.minute:02}.txt")
-    
+
     # Create plot of losses
     figure(figsize=(9, 10), dpi=80)
-    fig, (ax1, ax2) = plt.subplots(2, sharex=True)
-    
-    ax1.plot(range(1, 1 + n_epochs), [x.detach().cpu() for x in mean_losses_train], label="Train", color="blue")
-    ax2.plot(range(1, 1 + n_epochs), [x.detach().cpu() for x in mean_losses_test], label="Test", color="red")
+    fig, (ax1, ax2, ax3) = plt.subplots(3, sharex=True)
+
+    ax1.plot(range(1, len(mean_losses_train)+1), [x.detach().cpu() for x in mean_losses_train], label="Train", color="blue")
+    ax2.plot(range(1, len(mean_losses_test)+1), [x.detach().cpu() for x in mean_losses_test], label="Test", color="red")
+    ax3.plot(range(1, len(mean_losses_val)+1), [x.detach().cpu() for x in mean_losses_val], label="Validation", color="green")
     fig.legend()
-    
+
     # Check if /artifacts/ subdir exists
     if not Path("artifacts/").exists():
         os.mkdir(Path("artifacts/"))
 
     # save plot of losses
-    fig.savefig(Path("artifacts") / f"session_{now.month:02}_{now.day:02}_{now.hour}_{now.minute:02}.png")
+    fig.savefig(Path("artifacts") / f"session_{now.month:02}_{now.day: 02}_{now.hour}_{now.minute:02}.png")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--nb_epochs", help="number of training iterations", default=10, type=int
+        "--nb_epochs", help="number of training iterations", default=75, type=int
     )
-    parser.add_argument("--batch_size", help="batch_size", default=25, type=int)
+    parser.add_argument("--batch_size", help="batch_size", default=32, type=int)
     parser.add_argument(
         "--balanced_batches",
         help="whether to balance batches for class labels",
