@@ -16,9 +16,6 @@ from matplotlib.pyplot import figure
 import os
 import argparse
 import plotext  # type: ignore
-from datetime import datetime
-from pathlib import Path
-from typing import List
 
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
@@ -43,3 +40,5 @@ transform = transforms.RandomAffine(degrees=0, translate=(0.2, 0), fill=0)
 # Apply the transformation to the image
 shifted_img = transform(image)
 shifted_img.show()
+
+#shit
