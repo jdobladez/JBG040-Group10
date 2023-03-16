@@ -32,31 +32,21 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
     X_train = np.load("data/X_train.npy")
     Y_train = np.load("data/Y_train.npy")
 
-    # Flattening the 3D arrays into 2D arrays
-    # X_train_2d = X_train.reshape(X_train.shape[0], -1)
-    # Y_train_2d = Y_train.reshape(Y_train.shape[0], -1)
-
     # Split data into training and validation sets
     X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.5, random_state=42)
 
-    #Stratify data
+    #Stratify data and flatten it to 2D arrays
     rus = RandomUnderSampler(sampling_strategy='majority', random_state=42)
     # X_rus_train, Y_rus_train = rus.fit_resample(X_train, Y_train)
     # X_rus_val, Y_rus_val = rus.fit_resample(X_val, Y_val)
     X_rus_train, Y_rus_train = rus.fit_resample(X_train.reshape(X_train.shape[0], -1), Y_train)
     X_rus_val, Y_rus_val = rus.fit_resample(X_val.reshape(X_val.shape[0], -1), Y_val)
 
-    # Reshape the arrays into 4D arrays
+    # Reshape the arrays into original shape
     X_rus_train = X_rus_train.reshape(-1, 1, 128, 128)
     X_rus_val = X_rus_val.reshape(-1, 1, 128, 128)
     Y_rus_train = Y_rus_train.flatten()
     Y_rus_val = Y_rus_val.flatten()
-
-    #Reshaping the 2D arrays back to 3D arrays
-    # X_rus_train = X_rus_train.reshape(-1, 1, 128, 128)
-    # X_rus_val = X_rus_val.reshape(-1, 1, 128, 128)
-    # Y_rus_train = Y_rus_train.reshape(-1, 1, 128, 128)
-    # Y_rus_val = Y_rus_val.reshape(-1, 1, 128, 128)
 
     # Save split data to disk
     np.save("data/X_train_split.npy", X_rus_train)
@@ -112,10 +102,10 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
         batch_size=batch_size, dataset=train_dataset, balanced=args.balanced_batches
     )
     test_sampler = BatchSampler(
-        batch_size=16, dataset=test_dataset, balanced=args.balanced_batches
+        batch_size=100, dataset=test_dataset, balanced=args.balanced_batches
     )
     val_sampler = BatchSampler(
-        batch_size=16, dataset=val_dataset, balanced=args.balanced_batches
+        batch_size=100, dataset=val_dataset, balanced=args.balanced_batches
     )
 
     best_val_loss = float("inf")   # smallest valuation loss over epochs
