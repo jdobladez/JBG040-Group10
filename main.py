@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import List
 
 from sklearn.model_selection import train_test_split
-
+from imblearn.under_sampling import RandomUnderSampler
 
 
 def main(args: argparse.Namespace, activeloop: bool = True) -> None:
@@ -33,13 +33,13 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
     Y_train = np.load("data/Y_train.npy")
 
     # Split data into training and validation sets
-    X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.5, random_state=42, stratify=True)
+    X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.5, random_state=42)
 
     # Save split data to disk
-    np.save("C:/Users/vinay/PycharmProjects/JBG040-Group10/data/X_train_split.npy", X_train)
-    np.save("C:/Users/vinay/PycharmProjects/JBG040-Group10/data/Y_train_split.npy", Y_train)
-    np.save("C:/Users/vinay/PycharmProjects/JBG040-Group10/data/X_val.npy", X_val)
-    np.save("C:/Users/vinay/PycharmProjects/JBG040-Group10/data/Y_val.npy", Y_val)
+    np.save("data/X_train_split.npy", X_train)
+    np.save("data/Y_train_split.npy", Y_train)
+    np.save("data/X_val.npy", X_val)
+    np.save("data/Y_val.npy", Y_val)
 
     # Create ImageDataset objects from the split data
     train_dataset = ImageDataset(Path("data/X_train_split.npy"), Path("data/Y_train_split.npy"))
