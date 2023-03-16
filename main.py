@@ -33,13 +33,13 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
     Y_train = np.load("data/Y_train.npy")
 
     # Split data into training and validation sets
-    X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.1, random_state=42)
+    X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.5, random_state=42, stratify=True)
 
     # Save split data to disk
-    np.save("data/X_train_split.npy", X_train)
-    np.save("data/Y_train_split.npy", Y_train)
-    np.save("data/X_val.npy", X_val)
-    np.save("data/Y_val.npy", Y_val)
+    np.save("C:/Users/vinay/PycharmProjects/JBG040-Group10/data/X_train_split.npy", X_train)
+    np.save("C:/Users/vinay/PycharmProjects/JBG040-Group10/data/Y_train_split.npy", Y_train)
+    np.save("C:/Users/vinay/PycharmProjects/JBG040-Group10/data/X_val.npy", X_val)
+    np.save("C:/Users/vinay/PycharmProjects/JBG040-Group10/data/Y_val.npy", Y_val)
 
     # Create ImageDataset objects from the split data
     train_dataset = ImageDataset(Path("data/X_train_split.npy"), Path("data/Y_train_split.npy"))
@@ -89,10 +89,10 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
         batch_size=batch_size, dataset=train_dataset, balanced=args.balanced_batches
     )
     test_sampler = BatchSampler(
-        batch_size=100, dataset=test_dataset, balanced=args.balanced_batches
+        batch_size=16, dataset=test_dataset, balanced=args.balanced_batches
     )
     val_sampler = BatchSampler(
-        batch_size=100, dataset=val_dataset, balanced=args.balanced_batches
+        batch_size=16, dataset=val_dataset, balanced=args.balanced_batches
     )
 
     best_val_loss = float("inf")   # smallest valuation loss over epochs
@@ -111,7 +111,7 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
             # Calculating and printing statistics:
             mean_loss = sum(losses) / len(losses)
             mean_losses_train.append(mean_loss)
-            print(f"\nEpoch {e + 1} training done, loss on train set: {mean_loss}\n")
+            print(f"\nEpoch {e + 1} training done, loss on train set: {mean_loss}/n")
 
             # Validaton
             losses = test_model(model, val_sampler, loss_function, device)
