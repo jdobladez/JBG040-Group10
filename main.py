@@ -40,8 +40,6 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
 
     #Stratify data and flatten it to 2D arrays
     rus = RandomUnderSampler(sampling_strategy='majority', random_state=42)
-    # X_rus_train, Y_rus_train = rus.fit_resample(X_train, Y_train)
-    # X_rus_val, Y_rus_val = rus.fit_resample(X_val, Y_val)
     X_rus_train, Y_rus_train = rus.fit_resample(X_train.reshape(X_train.shape[0], -1), Y_train)
     X_rus_val, Y_rus_val = rus.fit_resample(X_val.reshape(X_val.shape[0], -1), Y_val)
 
@@ -112,7 +110,7 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
     )
 
     best_val_loss = float("inf")   # smallest valuation loss over epochs
-    patience = 1  # number of epochs to wait for improvement
+    patience = 5  # number of epochs to wait for improvement
     wait = 0  # number of epochs without improvement
 
     mean_losses_train: List[torch.Tensor] = []
@@ -197,9 +195,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--nb_epochs", help="number of training iterations", default=75, type=int
+        "--nb_epochs", help="number of training iterations", default=100, type=int
     )
-    parser.add_argument("--batch_size", help="batch_size", default=16, type=int)
+    parser.add_argument("--batch_size", help="batch_size", default=50, type=int)
     parser.add_argument(
         "--balanced_batches",
         help="whether to balance batches for class labels",
