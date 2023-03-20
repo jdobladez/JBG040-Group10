@@ -29,6 +29,7 @@ from imblearn.under_sampling import RandomUnderSampler
 def main(args: argparse.Namespace, activeloop: bool = True) -> None:
 
     # Load data from numpy arrays
+    # Note: If testing for experiment 2, load the augmented training data instead
     X_train = np.load("data/X_train.npy")
     Y_train = np.load("data/Y_train.npy")
 
