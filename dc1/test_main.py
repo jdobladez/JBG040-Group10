@@ -70,7 +70,7 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
         batch_size=batch_size, dataset=train_dataset, balanced=args.balanced_batches
     )
     test_sampler = BatchSampler(
-        batch_size=100, dataset=test_dataset, balanced=args.balanced_batches
+        batch_size=25, dataset=test_dataset, balanced=args.balanced_batches
     )
 
     mean_losses_train: List[torch.Tensor] = []
