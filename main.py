@@ -5,6 +5,7 @@ from dc1.batch_sampler import BatchSampler
 from dc1.image_dataset import ImageDataset
 from dc1.net import Net
 from dc1.train_test import train_model, test_model
+from Data_Augmentation import data_augmentation
 
 # Torch imports
 import torch
@@ -25,13 +26,14 @@ from typing import List
 from sklearn.model_selection import train_test_split
 from imblearn.under_sampling import RandomUnderSampler
 
-
 def main(args: argparse.Namespace, activeloop: bool = True) -> None:
+    # Creating the augmented training dataset
+    print("The augmented training datasets are being prepared....")
+    data_augmentation()
 
-    # Load data from numpy arrays
-    # Note: If testing for experiment 2, load the augmented training data instead
-    X_train = np.load("data/X_train.npy")
-    Y_train = np.load("data/Y_train.npy")
+    # Loading the augmented datasets
+    X_train = np.load("data/X_train_augmented.npy")
+    Y_train = np.load("data/Y_train_augmented.npy")
 
     # Split data into training and validation sets
     X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.5, random_state=42)
@@ -201,7 +203,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--balanced_batches",
         help="whether to balance batches for class labels",
-        default=True,
+        default=False,
         type=bool,
     )
     args = parser.parse_args()
