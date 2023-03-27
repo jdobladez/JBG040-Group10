@@ -152,6 +152,8 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
             # Testing:
             losses = test_model(model, test_sampler, loss_function, device)
 
+            label_names = ['Atelectasis', 'Effusion', 'Infiltration', 'No Finding', 'Nodule', 'Pneumothorax']
+
             y_true = []
             y_pred = []
             for batch in test_sampler:
@@ -185,8 +187,9 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
     print(conf_matrix)
 
     # Plot the confusion matrix
+    plt.figure(figsize=(13, 13))
     sns.set(font_scale=1.4)
-    sns.heatmap(conf_matrix, annot=True, annot_kws={"size": 16}, cmap="Blues", fmt="d")
+    sns.heatmap(conf_matrix, annot=True, annot_kws={"size": 16}, cmap="Blues", fmt="d", xticklabels=label_names, yticklabels=label_names)
     plt.title("Confusion Matrix")
     plt.xlabel("Predicted Label")
     plt.ylabel("True Label")
@@ -223,13 +226,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--nb_epochs", help="number of training iterations", default=100, type=int
+        "--nb_epochs", help="number of training iterations", default=1, type=int
     )
     parser.add_argument("--batch_size", help="batch_size", default=50, type=int)
     parser.add_argument(
         "--balanced_batches",
         help="whether to balance batches for class labels",
-        default=False,
+        default=True,
         type=bool,
     )
     args = parser.parse_args()
