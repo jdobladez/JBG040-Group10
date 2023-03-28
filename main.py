@@ -5,17 +5,17 @@ from dc1.batch_sampler import BatchSampler
 from dc1.image_dataset import ImageDataset
 from dc1.net import Net
 from dc1.train_test import train_model, test_model
-from Data_Augmentation import data_augmentation
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import numpy as np
 from imblearn.under_sampling import RandomUnderSampler
-
+from dc1.Evaluation_matrix import evaluate
 # Torch imports
 import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchsummary import summary  # type: ignore
+# import tensorflow as tf
 
 # Other imports
 import matplotlib.pyplot as plt  # type: ignore
@@ -30,8 +30,8 @@ from typing import List
 
 def main(args: argparse.Namespace, activeloop: bool = True) -> None:
     # Creating the augmented training dataset
-    #print("The augmented training datasets are being prepared....")
-    #data_augmentation()
+    # print("The augmented training datasets are being prepared....")
+    # data_augmentation()
 
     # Loading the augmented datasets
     X_train = np.load("data/X_train_augmented.npy")
@@ -186,6 +186,10 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
     print("Confusion matrix:")
     print(conf_matrix)
 
+    # Evaluation Matrix for each class
+    evaluate(conf_matrix)
+
+
     # Plot the confusion matrix
     plt.figure(figsize=(13, 13))
     sns.set(font_scale=1.4)
@@ -226,7 +230,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--nb_epochs", help="number of training iterations", default=1, type=int
+        "--nb_epochs", help="number of training iterations", default=10, type=int
     )
     parser.add_argument("--batch_size", help="batch_size", default=50, type=int)
     parser.add_argument(
