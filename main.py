@@ -11,6 +11,7 @@ import numpy as np
 from imblearn.under_sampling import RandomUnderSampler
 from dc1.Evaluation_matrix import evaluate
 # Torch imports
+import tensorflow as tf
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -183,17 +184,16 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
 
             plotext.show()
 
-    print("Confusion matrix:")
-    print(conf_matrix)
+    #print("Confusion matrix:")
+    #print(conf_matrix)
 
     # Evaluation Matrix for each class
-    evaluate(conf_matrix)
-
+    eval_fig = evaluate(conf_matrix)
 
     # Plot the confusion matrix
     plt.figure(figsize=(13, 13))
     sns.set(font_scale=1.4)
-    sns.heatmap(conf_matrix, annot=True, annot_kws={"size": 16}, cmap="Blues", fmt="d", xticklabels=label_names, yticklabels=label_names)
+    conf_fig = sns.heatmap(conf_matrix, annot=True, annot_kws={"size": 16}, cmap="Blues", fmt="d", xticklabels=label_names, yticklabels=label_names)
     plt.title("Confusion Matrix")
     plt.xlabel("Predicted Label")
     plt.ylabel("True Label")
@@ -224,13 +224,14 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
 
     # save plot of losses
     fig.savefig(Path("artifacts") / f"session_{now.month:02}_{now.day: 02}_{now.hour}_{now.minute:02}.png")
-
+    eval_fig.figure.savefig(Path("artifacts") / f"eval_{now.month:02}_{now.day: 02}_{now.hour}_{now.minute:02}.png")
+    conf_fig.figure.savefig(Path("artifacts") / f"conf_{now.month:02}_{now.day: 02}_{now.hour}_{now.minute:02}.png")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--nb_epochs", help="number of training iterations", default=10, type=int
+        "--nb_epochs", help="number of training iterations", default=1, type=int
     )
     parser.add_argument("--batch_size", help="batch_size", default=50, type=int)
     parser.add_argument(

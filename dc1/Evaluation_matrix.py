@@ -27,8 +27,8 @@ def evaluate(confusion_matrix):
         eval_matrices.append(eval_matrix)
     print(eval_matrices)
 
-    fig, axs = plt.subplots(nrows=1, ncols=cm.shape[0], figsize=(10, 5), sharey=True)
-    fig.suptitle('Evaluation Matrices for Each Class')
+    fig1, axs = plt.subplots(nrows=1, ncols=cm.shape[0], figsize=(10, 5), sharey=True)
+    fig1.suptitle('Evaluation Matrices for Each Class')
 
     for i in range(cm.shape[0]):
         ax = sns.heatmap(eval_matrices[i], annot=True, cmap='Blues', fmt='.2f',
@@ -36,3 +36,4 @@ def evaluate(confusion_matrix):
                          cbar=False, ax=axs[i])
 
     plt.show()
+    return fig1
