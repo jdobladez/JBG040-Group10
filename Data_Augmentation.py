@@ -9,22 +9,15 @@ import matplotlib.pyplot as plt  # type: ignore
 import plotext  # type: ignore
 import torchvision.transforms as transforms
 
-def data_augmentation():
+def data_augmentation(data_train_X, data_train_Y):
     # Setting the seed
     np.random.seed(69)
-
-    # Loading the training datasets
-    data_train_X = np.load("data/X_train.npy")
-    data_train_Y = np.load("data/Y_train.npy")
-
-    # Generating a random number to use as input for random adjust sharpener
-    sharpness_factor = random.sample(range(0, 3), 1)[0]
 
     # Creating and storing all the transformations
     transform = transforms.Compose([
        transforms.ColorJitter(brightness=(0.5, 1.5)),
        transforms.RandomAffine(degrees=0, translate=(0.2, 0), fill=0),
-       transforms.RandomAdjustSharpness(sharpness_factor=sharpness_factor, p=0.3),
+       transforms.RandomAdjustSharpness(sharpness_factor=random.sample(range(0, 3), 1)[0], p=0.3),
        transforms.RandomRotation(degrees=(0, 10))
     ])
 
@@ -63,6 +56,20 @@ def data_augmentation():
     # Concatenate the original Y dataset with the class labels for the augmented data
     all_Y = np.concatenate((data_train_Y, sampled_Y), axis=0)
 
-    # Saving the new X and Y training dataset
-    np.save('data/X_train_augmented.npy', all_images)
-    np.save('data/Y_train_augmented.npy', all_Y)
+    # Randomising the order of the indices so the augmented data is not all at the end.
+    # original lists
+    list1 = all_images
+    list2 = all_Y
+
+    # combine the two lists using zip
+    combined = list(zip(list1, list2))
+    # shuffle the combined list
+    random.shuffle(combined)
+
+    # separate the shuffled items back into their original lists
+    shuffled_list1, shuffled_list2 = zip(*combined)
+    final_X = np.array(shuffled_list1)
+    final_Y = np.array(shuffled_list2)
+
+    return final_X, final_Y
+
