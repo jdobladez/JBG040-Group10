@@ -47,7 +47,7 @@ transform = transforms.Compose([
 indices = list(range(len(data_train_X)))
 
 # Setting the sample size
-k = 10000
+k = 100
 
 # Use the reservoir sampling algorithm to sample k images from the dataset
 reservoir = data_train_X[:k].copy()
