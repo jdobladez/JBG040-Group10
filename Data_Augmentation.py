@@ -27,7 +27,7 @@ def data_augmentation(data_train_X, data_train_Y):
     indices = list(range(len(data_train_X)))
 
     # Setting the sample size
-    k = 10000
+    k = 1000
 
     # Use the reservoir sampling algorithm to sample k images from the dataset
     reservoir = data_train_X[:k].copy()

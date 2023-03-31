@@ -72,15 +72,16 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
     model = Net(n_classes=6)
 
     # Initialize optimizer(s) and loss function(s)
-    optimizer_name = 'SGD'
-    if optimizer_name == 'Adam':
-        optimizer = optim.Adam(model.parameters(), lr=0.001, betas=(0.9,0.98))
-    elif optimizer_name == 'SGD':
-        optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
-    elif optimizer_name == 'RMSprop':
-        optimizer = optim.RMSprop(model.parameters(), lr=0.001)
-    else:
-        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.1) #run the default optimizer if not stated anything else
+    # optimizer_name = 'SGD'
+    # if optimizer_name == 'Adam':
+    #     optimizer = optim.Adam(model.parameters(), lr=0.001, betas=(0.9,0.98))
+    # elif optimizer_name == 'SGD':
+    #     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
+    # elif optimizer_name == 'RMSprop':
+    #     optimizer = optim.RMSprop(model.parameters(), lr=0.001)
+    # else:
+    #     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.1) #run the default optimizer if not stated anything else
+
     loss_function = nn.CrossEntropyLoss()
 
     # fetch epoch and batch count from arguments
