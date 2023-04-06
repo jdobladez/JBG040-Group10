@@ -239,9 +239,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--nb_epochs", help="number of training iterations", default=10, type=int
+        "--nb_epochs", help="number of training iterations", default=100, type=int
     )
-    parser.add_argument("--batch_size", help="batch_size", default=50, type=int)
+    parser.add_argument("--batch_size", help="batch_size", default=65, type=int)
     parser.add_argument(
         "--balanced_batches",
         help="whether to balance batches for class labels",
