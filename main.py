@@ -5,6 +5,7 @@ from dc1.batch_sampler import BatchSampler
 from dc1.image_dataset import ImageDataset
 from dc1.net import Net
 from dc1.train_test import train_model, test_model
+from Data_Augmentation import data_augmentation
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import numpy as np
@@ -16,7 +17,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torchsummary import summary  # type: ignore
-# import tensorflow as tf
 
 # Other imports
 import matplotlib.pyplot as plt  # type: ignore
@@ -30,18 +30,19 @@ from typing import List
 
 
 def main(args: argparse.Namespace, activeloop: bool = True) -> None:
-    # Creating the augmented training dataset
-    # print("The augmented training datasets are being prepared....")
-    # data_augmentation()
 
-    # Loading the augmented datasets
-    X_train = np.load("data/X_train_augmented.npy")
-    Y_train = np.load("data/Y_train_augmented.npy")
+    # Loading the datasets
+    X_train = np.load("data/X_train.npy")
+    Y_train = np.load("data/Y_train.npy")
+
+    # Augment the training datasets
+    print("Augmenting the training data...")
+    X_train, Y_train = data_augmentation(X_train, Y_train)
 
     # Split data into training and validation sets
     X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.5, random_state=42)
 
-    #Stratify data and flatten it to 2D arrays
+    # Stratify data and flatten it to 2D arrays
     rus = RandomUnderSampler(sampling_strategy='majority', random_state=42)
     X_rus_train, Y_rus_train = rus.fit_resample(X_train.reshape(X_train.shape[0], -1), Y_train)
     X_rus_val, Y_rus_val = rus.fit_resample(X_val.reshape(X_val.shape[0], -1), Y_val)
@@ -140,7 +141,7 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
             mean_losses_train.append(mean_loss)
             print(f"\nEpoch {e + 1} training done, loss on train set: {mean_loss}/n")
 
-            # Validaton
+            # Validation
             losses = test_model(model, val_sampler, loss_function, device)
 
             # Calculating and printing statistics:
@@ -191,9 +192,6 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
             plotext.xticks([i for i in range(len(mean_losses_train) + 1)])
 
             plotext.show()
-
-    #print("Confusion matrix:")
-    #print(conf_matrix)
 
     # Evaluation Matrix for each class
     eval_fig = evaluate(conf_matrix)
