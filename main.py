@@ -5,12 +5,11 @@ from dc1.batch_sampler import BatchSampler
 from dc1.image_dataset import ImageDataset
 from dc1.net import Net
 from dc1.train_test import train_model, test_model
-from Data_Augmentation import data_augmentation
-from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.metrics import confusion_matrix
 import seaborn as sns
 import numpy as np
 from imblearn.under_sampling import RandomUnderSampler
-
+from dc1.Evaluation_matrix import evaluate
 # Torch imports
 import tensorflow as tf
 import torch
@@ -29,22 +28,20 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from sklearn.model_selection import train_test_split
-from imblearn.under_sampling import RandomUnderSampler
 
 def main(args: argparse.Namespace, activeloop: bool = True) -> None:
+    # Creating the augmented training dataset
+    # print("The augmented training datasets are being prepared....")
+    # data_augmentation()
 
-    # Loading the datasets
-    X_train = np.load("data/X_train.npy")
-    Y_train = np.load("data/Y_train.npy")
-
-    # Augment the training datasets
-    X_train, Y_train = data_augmentation(X_train, Y_train)
+    # Loading the augmented datasets
+    X_train = np.load("data/X_train_augmented.npy")
+    Y_train = np.load("data/Y_train_augmented.npy")
 
     # Split data into training and validation sets
     X_train, X_val, Y_train, Y_val = train_test_split(X_train, Y_train, test_size=0.5, random_state=42)
 
-    # Stratify data and flatten it to 2D arrays
+    #Stratify data and flatten it to 2D arrays
     rus = RandomUnderSampler(sampling_strategy='majority', random_state=42)
     X_rus_train, Y_rus_train = rus.fit_resample(X_train.reshape(X_train.shape[0], -1), Y_train)
     X_rus_val, Y_rus_val = rus.fit_resample(X_val.reshape(X_val.shape[0], -1), Y_val)
@@ -72,16 +69,15 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
     model = Net(n_classes=6)
 
     # Initialize optimizer(s) and loss function(s)
-    # optimizer_name = 'SGD'
-    # if optimizer_name == 'Adam':
-    #     optimizer = optim.Adam(model.parameters(), lr=0.001, betas=(0.9,0.98))
-    # elif optimizer_name == 'SGD':
-    #     optimizer = optim.SGD(model.parameters(), lr=0.01, momentum=0.9)
-    # elif optimizer_name == 'RMSprop':
-    #     optimizer = optim.RMSprop(model.parameters(), lr=0.001)
-    # else:
-    #     optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.1) #run the default optimizer if not stated anything else
-
+    optimizer_name = 'SGD' #state the optimizer name
+    if optimizer_name == 'Adam':
+        optimizer = optim.Adam(model.parameters(), lr=0.001, betas=(0.9,0.98))
+    elif optimizer_name == 'SGD':
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.1)
+    elif optimizer_name == 'RMSprop':
+        optimizer = optim.RMSprop(model.parameters(), lr=0.001)
+    else:
+        optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.1) #run the default optimizer if not stated anything else
     loss_function = nn.CrossEntropyLoss()
 
     # fetch epoch and batch count from arguments
@@ -136,7 +132,6 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
 
     for e in range(n_epochs):
         if activeloop:
-
             # Training:
             losses = train_model(model, train_sampler, optimizer, loss_function, device)
 
@@ -145,7 +140,7 @@ def main(args: argparse.Namespace, activeloop: bool = True) -> None:
             mean_losses_train.append(mean_loss)
             print(f"\nEpoch {e + 1} training done, loss on train set: {mean_loss}/n")
 
-            # Validation
+            # Validaton
             losses = test_model(model, val_sampler, loss_function, device)
 
             # Calculating and printing statistics:
@@ -244,7 +239,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
-        "--nb_epochs", help="number of training iterations", default=100, type=int
+        "--nb_epochs", help="number of training iterations", default=10, type=int
     )
     parser.add_argument("--batch_size", help="batch_size", default=50, type=int)
     parser.add_argument(
